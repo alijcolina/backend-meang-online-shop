@@ -1,6 +1,5 @@
 import { Db } from 'mongodb';
 
-
 /**
  * Obtener el ID que vamos a ustilizar en el nuevo usuario
  * @param database Base de datos con la que estamos trabajando
@@ -21,9 +20,9 @@ export const asignDocumentId = async (
     .sort(sort)
     .toArray();
   if (lastElement.length === 0) {
-    return 1;
+    return '1';
   }
-  return lastElement[0].id + 1;
+  return String(+lastElement[0].id + 1);
 };
 
 export const findOneElement = async (
@@ -34,26 +33,45 @@ export const findOneElement = async (
   return database.collection(collection).findOne(filter);
 };
 
-export const insertOneElement = async(
-    database: Db,
-    collection: string,
-    document: object
+export const insertOneElement = async (
+  database: Db,
+  collection: string,
+  document: object
 ) => {
-    return await database.collection(collection).insertOne(document);
+  return await database.collection(collection).insertOne(document);
 };
 
-export const insertManyElement = async(
-    database: Db,
-    collection: string,
-    documents: Array<object>
+export const insertManyElements = async (
+  database: Db,
+  collection: string,
+  documents: Array<object>
 ) => {
-    return await database.collection(collection).insertMany(documents);
+  return await database.collection(collection).insertMany(documents);
 };
 
-export const findElement =async (
-    database: Db,
-    collection: string,
-    filter: object = {}
+export const updateOneElement = async (
+  database: Db,
+  collection: string,
+  filter: object,
+  updateObject: object
 ) => {
-    return await database.collection(collection).find(filter).toArray();
+  return await database
+    .collection(collection)
+    .updateOne(filter, { $set: updateObject });
+};
+
+export const deleteOneElement = async (
+  database: Db,
+  collection: string,
+  filter: object = {}
+) => {
+  return await database.collection(collection).deleteOne(filter);
+};
+
+export const findElements = async (
+  database: Db,
+  collection: string,
+  filter: object = {}
+) => {
+  return await database.collection(collection).find(filter).toArray();
 };

@@ -1,8 +1,8 @@
-type ResultUser implements Result {
+type ResultGenre implements Result {
     "Estado de la operación"
     status: Boolean!
     "Mensaje de la operación para dar feedback"
     message: String!
-    "Información del usuario"
-    user: User
+    genre: Genre
+    genres: [Genre!]
 }

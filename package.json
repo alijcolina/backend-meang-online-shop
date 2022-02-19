@@ -21,7 +21,7 @@
     "netlify",
     "zeitnow"
   ],
-  "author": "Anartz Mugika Ledo <mugan86@gmail.com> (anartz-mugika.com)",
+  "author": "Ali Colina <alijcolina@gmail.com> (alijcolina-dev.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mugan86/backend-meang-online-shop/issues"
@@ -50,6 +50,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.5",
     "ncp": "^2.0.0",
+    "slugify": "^1.6.5",
     "typescript": "^3.8.3"
   },
   "devDependencies": {
