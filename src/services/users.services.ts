@@ -13,9 +13,16 @@ class UsersService extends ResolversOperationsService{
 
     // Lista de usuarios
     async items() {
-        const result = await this.list(this.collection, 'usuarios');
-        return { status: result.status, message: result.message, users: result.items};
-    }
+    const page = this.getVariables().pagination?.page;
+    const itemsPage = this.getVariables().pagination?.itemsPage;
+    const result = await this.list(this.collection, 'usuarios', page, itemsPage);
+    return {
+      info: result.info,
+      status: result.status,
+      message: result.message,
+      users: result.items,
+    };
+  }
     // Autenticarnos
     async auth() {
         let info = new JWT().verify(this.getContext().token!);

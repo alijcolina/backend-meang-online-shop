@@ -1,13 +1,12 @@
 import { Db } from 'mongodb';
+import { IPaginationOptions } from '../interfaces/pagination-options.interface';
 
 /**
- * Obtener el ID que vamos a ustilizar en el nuevo usuario
+ * Obtener el ID que vamos a utilizar en el nuevo usuario
  * @param database Base de datos con la que estamos trabajando
- * @param collection Colección donde queremos buscar el  último elemento
- * @param sort Como queremos ordenar { <propiedad>: -1 }
- * @returns
+ * @param collection Collección donde queremos buscar el último elemento
+ * @param sort Como queremos ordenarlo { <propiedad>: -1 }
  */
-
 export const asignDocumentId = async (
   database: Db,
   collection: string,
@@ -71,7 +70,26 @@ export const deleteOneElement = async (
 export const findElements = async (
   database: Db,
   collection: string,
-  filter: object = {}
+  filter: object = {},
+  paginationOptions: IPaginationOptions = {
+    page: 1,
+    pages: 1,
+    itemsPage: -1,
+    skip: 0,
+    total: -1
+  }
 ) => {
-  return await database.collection(collection).find(filter).toArray();
+  if (paginationOptions.total === -1) {
+    return await database.collection(collection).find(filter).toArray();
+  }
+  return await database.collection(collection).find(filter).limit(paginationOptions.itemsPage)
+                        .skip(paginationOptions.skip).toArray();
+};
+
+
+export const countElements = async (
+  database: Db,
+  collection: string
+) => {
+  return await database.collection(collection).countDocuments();
 };

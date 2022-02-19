@@ -1,23 +1,24 @@
-import { IVariables } from './../schema/interfaces/variable.interface';
+import { IVariables } from './../interfaces/variable.interface';
+
 import { IContextData } from './../interfaces/context-data.interface';
 import {
-  deleteOneElement,
   findElements,
   findOneElement,
   insertOneElement,
   updateOneElement,
+  deleteOneElement,
 } from './../lib/db-operations';
 import { Db } from 'mongodb';
+import { pagination } from '../lib/pagination';
 
 class ResolversOperationsService {
-  private root: object;
   private variables: IVariables;
   private context: IContextData;
   constructor(root: object, variables: IVariables, context: IContextData) {
-    this.root = root;
     this.variables = variables;
     this.context = context;
   }
+
   protected getContext(): IContextData { return this.context; }
   protected getDb(): Db {
     return this.context.db!;
@@ -26,22 +27,31 @@ class ResolversOperationsService {
     return this.variables;
   }
   // Listar información
-  protected async list(collection: string, listElement: string) {
+  protected async list(collection: string, listElement: string, page: number = 1, itemsPage: number = 20) {
     try {
+      console.log(page, itemsPage);
+      const paginationData = await pagination(this.getDb(), collection, page, itemsPage);
       return {
+        info: {
+          page: paginationData.page,
+          pages: paginationData.pages,
+          itemsPage: paginationData.itemsPage,
+          total: paginationData.total
+        },
         status: true,
         message: `Lista de ${listElement} correctamente cargada`,
-        items: await findElements(this.getDb(), collection),
+        items: await findElements(this.getDb(), collection, {}, paginationData),
       };
     } catch (error) {
       return {
+        info: null,
         status: false,
-        message: `Lista de ${listElement} no cargada ${error}`,
+        message: `Lista de ${listElement} no cargada: ${error}`,
         items: null,
       };
     }
   }
-  // Obtener detalles del item seleccionado
+  // Obtener detalles del item
   protected async get(collection: string) {
     const collectionLabel = collection.toLowerCase();
     try {
@@ -57,7 +67,7 @@ class ResolversOperationsService {
         }
         return {
           status: true,
-          message: `${collectionLabel} no ha obtenido detalles`,
+          message: `${collectionLabel} no ha obtenido detalles porque no existe`,
           item: null,
         };
       });
@@ -83,7 +93,7 @@ class ResolversOperationsService {
           }
           return {
             status: false,
-            message: `No se ha insertado el ${item}. Itentalo de nuevo`,
+            message: `No se ha insertado el ${item}. Inténtalo de nuevo por favor`,
             item: null,
           };
         }
@@ -91,7 +101,7 @@ class ResolversOperationsService {
     } catch (error) {
       return {
         status: false,
-        message: `Error inesperado al insertar el ${item}. Iténtalo de nuevo`,
+        message: `Error inesperado al insertar el ${item}. Inténtalo de nuevo por favor`,
         item: null,
       };
     }
@@ -113,26 +123,25 @@ class ResolversOperationsService {
         if (res.result.nModified === 1 && res.result.ok) {
           return {
             status: true,
-            message: `Elemento del item ${item}. Actualizado correctamente`,
+            message: `Elemento del ${item} actualizado correctamente.`,
             item: Object.assign({}, filter, objectUpdate),
           };
         }
         return {
           status: false,
-          message: `Error del ${item}. No se ha actializado. comprueba que estás filtrando correctamente o simplemente que no hay nada que actualizar`,
+          message: `Elemento del ${item} No se ha actualizado. Comprueba que estás filtrando correctamente o simplemente que no hay nada que actualizar`,
           item: null,
         };
       });
     } catch (error) {
       return {
         status: false,
-        message: `Error inesperado al actualizar el ${item}. Iténtalo de nuevo`,
+        message: `Error inesperado al actualizar el ${item}. Inténtalo de nuevo por favor`,
         item: null,
       };
     }
   }
-  // Eliminar item
-
+  // eliminar item
   protected async del(collection: string, filter: object, item: string) {
     try {
       return await deleteOneElement(this.getDb(), collection, filter).then(
@@ -145,14 +154,14 @@ class ResolversOperationsService {
           }
           return {
             status: false,
-            message: `Elemento del ${item} No se ha borrado. Comprueba el filtro`,
+            message: `Elemento del ${item} No se ha borrado. Comprueba el filtro.`,
           };
         }
       );
     } catch (error) {
       return {
         status: false,
-        message: `Error inesperado al eliminar el ${item}. Iténtalo de nuevo`,
+        message: `Error inesperado al eliminar el ${item}. Inténtalo de nuevo por favor`,
       };
     }
   }
