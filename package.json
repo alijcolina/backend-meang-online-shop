@@ -50,6 +50,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.5",
     "ncp": "^2.0.0",
+    "nodemailer": "^6.7.2",
     "slugify": "^1.6.5",
     "typescript": "^3.8.3"
   },
@@ -62,6 +63,7 @@
     "@types/jsonwebtoken": "^8.3.9",
     "@types/mongodb": "^3.5.5",
     "@types/node": "^13.11.0",
+    "@types/nodemailer": "^6.4.4",
     "nodemon": "^2.0.2",
     "ts-node": "^8.8.2",
     "typescript-tslint-plugin": "^0.5.5"

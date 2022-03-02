@@ -4,6 +4,7 @@ import { IContextData } from '../interfaces/context-data.interface';
 import ResolversOperationsService from './resolvers-operations.services';
 import bcrypt from 'bcrypt';
 import JWT from '../lib/jwt';
+import MailService from './mail.service';
 
 class UsersService extends ResolversOperationsService{
     private collection = COLLECTIONS.USERS;
@@ -165,8 +166,9 @@ class UsersService extends ResolversOperationsService{
         message: result.message
       };
     }
-    async block() {
+    async unblock(unblock: boolean) {
       const id = this.getVariables().id;
+      const user = this.getVariables().user;
       if (!this.checkData(String(id) || '')) {
           return {
               status: false,
@@ -174,12 +176,47 @@ class UsersService extends ResolversOperationsService{
               genre: null
           };
       }
-      const result = await this.update(this.collection, { id }, { active: false }, 'usuario');
+      if (user?.password === '1234') {
+        return {
+          status: false,
+          message: 'En este caso no podemos activar porque no has cambiado el password que corresponde a "1234"'
+        };
+      }
+      let update = {active: unblock};
+      if (unblock) {
+        update = Object.assign({}, {active: true}, {
+          birthday: user?.birthday, 
+          password:user!.password = bcrypt.hashSync(user!.password, 10),
+        });
+      }
+      console.log(update);      
+      const result = await this.update(this.collection, { id }, update, 'usuario');
+      const action = (unblock) ? 'Desbloqueado' : 'Bloqueado';
       return {
           status: result.status,
-          message: (result.status) ? 'Bloqueado correctamente': 'No se ha bloqueado comprobarlo por favor'
+          message: (result.status) ? `${action} correctamente`: `No se ha ${action.toLowerCase()} comprobar por favor`
       };
     }
+
+    async active() {
+      const id = this.getVariables().user?.id;
+      const email = this.getVariables().user?.email || '';
+      if (email === undefined || email === '') {
+        return {
+          status: false,
+          message: 'El email no se ha definido correctamente'
+        };
+      }
+      const token = new JWT().sign({user: {id, email}}, EXPIRETIME.H1);
+      const html = `Para activar la cuenta haz click en este enlace: <a href="${process.env.CLIENT_URL}/#/active/${token}">Clic aquí</a>`;
+      const mail = {
+        subject: 'Activar usuario',
+        to: email,
+        html
+      };
+      return new MailService().send(mail);
+    }
+
     private checkData(value: string) {
       return (value === '' || value === undefined) ? false: true;
     }
