@@ -1,5 +1,5 @@
 import { findOneElement, asignDocumentId } from './../lib/db-operations';
-import { COLLECTIONS, EXPIRETIME, MESSAGES } from '../config/constants';
+import { ACTIVE_VALUES_FILTER, COLLECTIONS, EXPIRETIME, MESSAGES } from '../config/constants';
 import { IContextData } from '../interfaces/context-data.interface';
 import ResolversOperationsService from './resolvers-operations.services';
 import bcrypt from 'bcrypt';
@@ -13,10 +13,17 @@ class UsersService extends ResolversOperationsService{
     }
 
     // Lista de usuarios
-    async items() {
+    async items(active: string = ACTIVE_VALUES_FILTER.ACTIVE) {
+    console.log('service', active);
+    let filter: object = { active: {$ne: false}};
+    if (active === ACTIVE_VALUES_FILTER.ALL) {
+      filter = {};
+    }else if (active === ACTIVE_VALUES_FILTER.INACTIVE) {
+      filter = { active: false };
+    }
     const page = this.getVariables().pagination?.page;
     const itemsPage = this.getVariables().pagination?.itemsPage;
-    const result = await this.list(this.collection, 'usuarios', page, itemsPage);
+    const result = await this.list(this.collection, 'usuarios', page, itemsPage, filter);
     return {
       info: result.info,
       status: result.status,
@@ -166,7 +173,7 @@ class UsersService extends ResolversOperationsService{
         message: result.message
       };
     }
-    async unblock(unblock: boolean) {
+    async unblock(unblock: boolean, admin: boolean) {
       const id = this.getVariables().id;
       const user = this.getVariables().user;
       if (!this.checkData(String(id) || '')) {
@@ -183,18 +190,20 @@ class UsersService extends ResolversOperationsService{
         };
       }
       let update = {active: unblock};
-      if (unblock) {
-        update = Object.assign({}, {active: true}, {
-          birthday: user?.birthday, 
-          password:user!.password = bcrypt.hashSync(user!.password, 10),
-        });
+      if (unblock && !admin) {
+        console.log('Soy cliente y estoy cambiando la contraseña');
+        update = Object.assign({}, {active: true}, 
+          {
+            birthday: user?.birthday, 
+            password: bcrypt.hashSync(user?.password, 10)
+          });
       }
-      console.log(update);      
+      console.log(update);
       const result = await this.update(this.collection, { id }, update, 'usuario');
       const action = (unblock) ? 'Desbloqueado' : 'Bloqueado';
       return {
           status: result.status,
-          message: (result.status) ? `${action} correctamente`: `No se ha ${action.toLowerCase()} comprobar por favor`
+          message: (result.status) ? `${action} correctamente`: `No se ha ${action.toLowerCase()} comprobarlo por favor`
       };
     }
 

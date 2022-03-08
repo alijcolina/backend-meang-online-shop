@@ -1,5 +1,6 @@
 import { IResolvers } from 'graphql-tools';
 import UsersService from '../../services/users.services';
+
 const resolversUserMutation: IResolvers = {
   Mutation: {
     register(_, { user }, context) {
@@ -11,9 +12,9 @@ const resolversUserMutation: IResolvers = {
     deleteUser(_, { id }, context) {
       return new UsersService(_, { id }, context).delete();
     },
-    blockUser(_, { id }, context) {
-      return new UsersService(_, { id }, context).unblock(false);
-    }
+    blockUser(_, { id, unblock, admin }, context) {
+      return new UsersService(_, { id }, context).unblock(unblock, admin);
+    },
   },
 };
 

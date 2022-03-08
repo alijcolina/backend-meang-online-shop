@@ -1,7 +1,13 @@
 "Definiciones de los tipos de raíz"
 type Query {
     "Lista de usuarios registrados en la Base de datos (Clientes / Admins)"
-    users (page: Int = 1, itemsPage: Int = 20): ResultUsers
+    users (
+        "Página seleccionada para acceder a ella"
+        page: Int = 1,
+        "Usuarios por página que se obtendrán por página"
+        itemsPage: Int = 20,
+        "Especificar el estado del usuario que queremos mostrar"
+        active: ActiveFilterEnum = ACTIVE): ResultUsers
     "Para iniciar sesión de usuario"
     login(email: String!, password: String!): ResultLogin
     "Autenticarnos mediante token"
@@ -10,4 +16,8 @@ type Query {
     genres (page: Int = 1, itemsPage: Int = 20): ResultGenre
     "Item del género seleccionado"
     genre(id: ID!): ResultGenre
+    "Lista de etiquetas (tags)"
+    tags (page: Int = 1, itemsPage: Int = 20): ResultTag
+    "Item del género seleccionado"
+    tag(id: ID!): ResultTag
 }
