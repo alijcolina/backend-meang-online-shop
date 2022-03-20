@@ -11,7 +11,7 @@ class ShopProductsService extends ResolversOperationsService {
 
   async items(
     active: string = ACTIVE_VALUES_FILTER.ACTIVE,
-    platform: string = '',
+    platform: Array<string> = ['-1'],
     random: boolean = false,
     otherFilters: object = {}
   ) {
@@ -21,8 +21,8 @@ class ShopProductsService extends ResolversOperationsService {
     } else if (active === ACTIVE_VALUES_FILTER.INACTIVE) {
       filter = { active: false };
     }
-    if (platform !== '' && platform !== undefined) {
-      filter = {...filter, ...{platform_id: platform}};
+    if (platform [0] !== '-1' && platform !== undefined) {
+      filter = {...filter, ...{platform_id: {$in: platform}}};
     }
 
     if (otherFilters !== {} && otherFilters !== undefined) {
